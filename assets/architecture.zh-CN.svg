@@ -1,5 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 660" width="1080" height="660" role="img" aria-labelledby="title desc" font-family="ui-sans-serif, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Source Han Sans SC', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 660" width="1080" height="660" role="img" style="background:#ffffff" aria-labelledby="title desc" font-family="ui-sans-serif, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Source Han Sans SC', sans-serif">
   <title id="title">repo-onboarding 架构图</title>
+  <rect x="0" y="0" width="1080" height="660" fill="#ffffff"/>
   <desc id="desc">流程图。scan.sh 与 scan.py 扫描目标仓库，并把五份地图文件写入 .claude/repo-map/。提问时先经 index.json 路由到少量候选源文件，读取这些文件之后再给出带 file:line 引用的有据回答。两次调用之间，diff-check.sh 比较 last_built_commit 与 HEAD，只修补受影响的地图章节。</desc>
 
   <defs>
@@ -11,7 +12,6 @@
     </marker>
   </defs>
 
-  <rect x="0" y="0" width="1080" height="660" fill="#ffffff"/>
 
   <g fill="none" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)">
     <path d="M 168 118 H 232"/>

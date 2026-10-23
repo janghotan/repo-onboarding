@@ -1,5 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 660" width="1080" height="660" role="img" aria-labelledby="title desc" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 660" width="1080" height="660" role="img" style="background:#ffffff" aria-labelledby="title desc" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
   <title id="title">repo-onboarding architecture</title>
+  <rect x="0" y="0" width="1080" height="660" fill="#ffffff"/>
   <desc id="desc">Flow diagram. A target repository is scanned by scan.sh and scan.py, which writes five map files into .claude/repo-map/. A question routes through index.json to a short list of candidate source files, which are read before a grounded answer with file:line citations is produced. Between invocations, diff-check.sh compares last_built_commit with HEAD and patches only the affected map sections.</desc>
 
   <defs>
@@ -12,7 +13,6 @@
   </defs>
 
   <!-- Explicit background so the diagram renders identically everywhere -->
-  <rect x="0" y="0" width="1080" height="660" fill="#ffffff"/>
 
   <!-- Primary flow -->
   <g fill="none" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)">
