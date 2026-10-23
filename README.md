@@ -1,0 +1,133 @@
+# repo-onboarding
+
+> **Description**: Persistent, commit-tracked codebase architecture and convention mapper for Claude Skills and AI coding agents.
+> **Topics**: `claude-skills` · `ai-agents` · `developer-tools` · `onboarding`
+
+`repo-onboarding` is a Claude Skill (`SKILL.md` + zero-dependency discovery scripts) that gives Claude an accurate, persistent mental map of any codebase it is dropped into. Instead of burning tokens re-scanning directories from scratch every session—or guessing from shallow filename matches—Claude builds a commit-tracked map in `.claude/repo-map/`, updates it incrementally via `git diff <last-hash>..HEAD --stat`, and answers `"how does X work here?"` or `"where do I change Y?"` with verified `file:line` citations.
+
+## Why `repo-onboarding`?
+
+When LLMs onboard to unfamiliar codebases, they usually re-derive structure from scratch every session, wasting tokens and giving shallow or wrong answers:
+
+1. **Shallow Guessing**: Answering architectural or modification questions after reading only one or two files, missing custom error hierarchies, auth middleware, or structured logging wrappers.
+2. **Repeated Cold-Start Scans**: Re-running broad file trees and `grep` sweeps at the start of every session, wasting context window capacity and latency on unchanged code.
+
+`repo-onboarding` persists and grounds that understanding across sessions:
+
+- **First Invocation (Full Structural Scan)**: Runs a language-agnostic discovery pass (`scripts/scan.sh`) and synthesizes five structured files into `.claude/repo-map/`.
+- **Subsequent Invocations (Git Commit Diff Check)**: Compares `last_built_commit` in `.claude/repo-map/index.json` against `HEAD` (`scripts/diff-check.sh`). If unchanged, the map is used immediately. If commits landed, only the affected directories are re-scanned (`git diff <last-hash>..HEAD --stat`) and patched in place.
+- **Evidence-First Q&A**: Uses `.claude/repo-map/index.json` as a fast routing table to locate candidate files, then reads those actual source files before answering so every response cites exact `file:line` references and reconciles any uncommitted local changes.
+
+## What Gets Generated in `.claude/repo-map/`
+
+```text
+.claude/repo-map/
+├── architecture.md   # High-level system shape: major components, how they connect, data flow
+├── modules.md        # Per-directory/module summary: purpose, key files, inbound & outbound dependencies
+├── entry-points.md   # Where execution starts (main functions, API routes, CLI commands, workers) with file:line refs
+├── conventions.md    # Inferred real patterns (errors, tests, naming, imports, logging) backed by 1-2 file:line examples
+└── index.json        # Lightweight machine-readable map: {topic/module -> [relevant file paths]} + last_built_commit
+```
+
+## Installation
+
+### Option 1: Claude Code Plugin / Marketplace Style
+
+Install as a Claude Code plugin/skill via `/plugin`:
+
+```text
+/plugin marketplace add janghotan/repo-onboarding
+/plugin install repo-onboarding
+```
+
+### Option 2: Standalone `.claude/skills/` Drop-In (Per-Repo or Global)
+
+Clone or copy `repo-onboarding` directly into your repository's `.claude/skills/` directory (or `~/.claude/skills/` for global availability across all repositories):
+
+```bash
+# Per-repository drop-in
+mkdir -p .claude/skills
+git clone https://github.com/janghotan/repo-onboarding.git .claude/skills/repo-onboarding
+
+# Or global drop-in for your user account
+mkdir -p ~/.claude/skills
+git clone https://github.com/janghotan/repo-onboarding.git ~/.claude/skills/repo-onboarding
+```
+
+Both `scripts/scan.sh` (`scripts/scan.py`) and `scripts/diff-check.sh` use only standard POSIX utilities, `git`, and the Python 3 standard library—zero third-party dependencies required.
+
+## Usage Examples
+
+### 1. First Onboarding & Architecture Overview
+
+Ask Claude inside any repository:
+
+```text
+Onboard to this repo and give me an architecture overview. How do requests flow from the API to storage?
+```
+
+1. Runs `./scripts/diff-check.sh --from-index .` -> detects `STATUS: FULL_SCAN_NEEDED`.
+2. Runs `./scripts/scan.sh . --format markdown` to collect directory topology, manifest dependencies (`package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `Makefile`, etc.), entry-point candidates, and convention probes.
+3. Reads the primary entry points and domain modules, then writes `.claude/repo-map/{architecture.md,modules.md,entry-points.md,conventions.md,index.json}`.
+4. Answers your question with concrete `file:line` references.
+
+### 2. Answering "How Does X Work Here?"
+
+```text
+How does webhook delivery failure and dead-lettering work here?
+```
+
+**Sample Grounded Answer** (from [`examples/taskpulse-service/sample-qa-walkthrough.md`](examples/taskpulse-service/sample-qa-walkthrough.md)):
+
+> Webhook delivery failures are handled across the worker dispatch loop (`src/workers/dispatcher.py`) and the SQLite repository (`src/storage/repository.py`):
+>
+> 1. **Batch Polling (`src/workers/dispatcher.py:30-39`)**: `run_worker_once()` calls `repo.fetch_pending_batch(limit=10)` (`src/storage/repository.py:74-79`), selecting up to 10 rows with `status = 'PENDING'` ordered by `created_at ASC`.
+> 2. **Delivery & Exception Catching (`src/workers/dispatcher.py:12-27`)**: `dispatch_single_task()` calls `sender(record.target_url, record.payload)` inside `try ... except Exception as exc:` (`src/workers/dispatcher.py:19-27`). Non-2xx responses (`src/workers/dispatcher.py:24`) or transport exceptions (`src/workers/dispatcher.py:25-27`) call `repo.record_failure(record.task_id, max_attempts=settings.max_attempts)`.
+> 3. **Retry vs. Dead-Letter Transition (`src/storage/repository.py:93-107`)**: `TaskRepository.record_failure()` increments `attempts` (`src/storage/repository.py:95`) and transitions `status` to `'DEAD_LETTER'` once `next_attempts >= max_attempts` (default `3` in `src/config.py:27`).
+
+### 3. Answering "Where Do I Change Y?"
+
+```text
+Where do I change the code to add a POST /v1/tasks/{task_id}/retry endpoint that requeues a DEAD_LETTER task?
+```
+
+Claude routes via `.claude/repo-map/index.json` and `.claude/repo-map/conventions.md`, inspects `src/storage/repository.py`, `src/api/routes.py`, and `tests/test_taskpulse.py`, and provides an exact modification checklist matching the repository's error hierarchy (`InvalidTaskStateError` at `src/core/errors.py:36`), route naming (`handle_<verb>_<resource>` at `src/api/routes.py:21-45`), and structured logging (`extra={"structured_fields": ...}` at `src/core/logger.py:19`).
+
+### 4. Incremental Updates After New Commits
+
+When new commits land, `scripts/diff-check.sh` compares `last_built_commit` in `index.json` against `HEAD`:
+
+```text
+$ ./scripts/diff-check.sh --from-index /path/to/taskpulse
+STATUS: INCREMENTAL_UPDATE_NEEDED
+LAST_BUILT_COMMIT: 474926e43d1be1e144298853d7305ea25f4b2cd6
+CURRENT_HEAD: e2a4eb25e5ecb1f799bb9fdddfaa5995c66fdf93
+DIRTY_WORKING_TREE: false
+
+=== DIFF STAT (474926e..e2a4eb2) ===
+ src/api/routes.py         |  6 ++++++
+ src/storage/repository.py | 13 +++++++++++++
+ 2 files changed, 19 insertions(+)
+
+=== AFFECTED MODULES / DIRECTORIES ===
+src/api
+src/storage
+```
+
+Claude then rescans only the affected directories (`./scripts/scan.sh /path/to/taskpulse --paths src/api src/storage`) and patches the relevant sections in `.claude/repo-map/`.
+
+## Worked Example (`examples/taskpulse-service/`)
+
+Explore [`examples/taskpulse-service/`](examples/taskpulse-service/) to inspect a complete generated map and Q&A session before installing:
+
+- [`examples/taskpulse-service/.claude/repo-map/architecture.md`](examples/taskpulse-service/.claude/repo-map/architecture.md)
+- [`examples/taskpulse-service/.claude/repo-map/modules.md`](examples/taskpulse-service/.claude/repo-map/modules.md)
+- [`examples/taskpulse-service/.claude/repo-map/entry-points.md`](examples/taskpulse-service/.claude/repo-map/entry-points.md)
+- [`examples/taskpulse-service/.claude/repo-map/conventions.md`](examples/taskpulse-service/.claude/repo-map/conventions.md)
+- [`examples/taskpulse-service/.claude/repo-map/index.json`](examples/taskpulse-service/.claude/repo-map/index.json)
+- [`examples/taskpulse-service/sample-qa-walkthrough.md`](examples/taskpulse-service/sample-qa-walkthrough.md)
+- [`examples/taskpulse-service/incremental-diff-output.txt`](examples/taskpulse-service/incremental-diff-output.txt)
+
+## License
+
+Licensed under the [Apache License, Version 2.0](LICENSE).
