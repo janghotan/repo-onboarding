@@ -1,6 +1,6 @@
 [简体中文](README.zh-CN.md) | [English](README.md)
 
-<img src="assets/social-preview.svg" alt="repo-onboarding：为任意代码库建立可持久化、按提交跟踪的地图" width="100%">
+<img src="assets/social-preview.zh-CN.svg" alt="repo-onboarding：为任意代码库建立可持久化、按提交跟踪的地图" width="100%">
 
 > **简介**：面向 Claude Skills 与 AI 编码代理的可持久化、按提交跟踪的代码库架构与约定映射工具。
 > **主题**：`claude-skills` · `ai-agents` · `developer-tools` · `onboarding`

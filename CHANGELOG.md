@@ -19,7 +19,7 @@ evidence.
 - **`examples/taskpulse-service/`**: End-to-end worked example containing all five generated `.claude/repo-map/` files (`architecture.md`, `modules.md`, `entry-points.md`, `conventions.md`, `index.json`), incremental diff output (`incremental-diff-output.txt`), and a grounded Q&A walkthrough (`sample-qa-walkthrough.md`).
 - **GitHub Actions CI (`.github/workflows/ci.yml`)**: Runs on every push and pull request, validating the skill, linting the Python scripts with `ruff`, linting the shell scripts with `shellcheck`, exercising `scan.sh` and `diff-check.sh` against the `examples/taskpulse-service` fixture and this repository, and verifying the two READMEs link to each other.
 - **Repository Documentation**: `README.md`, `README.zh-CN.md`, `LICENSE` (Apache 2.0), `CONTRIBUTING.md`, and `.gitignore`.
-- **`assets/`**: Hand-authored SVG architecture diagram and social-preview banner.
+- **`assets/`**: Hand-authored SVG architecture diagrams and social-preview banners in English and Simplified Chinese, each with an opaque white background for the diagrams, plus 1280x640 PNG exports of the banners.
 
 ### Changed
 
