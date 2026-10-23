@@ -26,7 +26,6 @@ import argparse
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 from collections import Counter, defaultdict

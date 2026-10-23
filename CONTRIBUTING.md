@@ -18,7 +18,11 @@ Thank you for helping improve `repo-onboarding`! This project gives AI coding ag
    ./scripts/scan.sh . --format json | python3 -m json.tool > /dev/null
    ./scripts/diff-check.sh --from-index examples/taskpulse-service
    ```
-3. Verify `SKILL.md` formatting and frontmatter rules before opening a pull request.
+3. Run the self-validation script, which checks the `SKILL.md` frontmatter and line budget, unresolved placeholder markers, relative README links, and the example `index.json`:
+   ```bash
+   python3 scripts/validate.py .
+   ```
+4. Run the same linting steps CI runs (`ruff` for Python, `shellcheck` for shell) before opening a pull request.
 
 ## Pull Request Checklist
 

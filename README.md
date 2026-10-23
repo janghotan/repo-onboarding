@@ -1,9 +1,11 @@
-# repo-onboarding
+[English](README.md) | [简体中文](README.zh-CN.md)
+
+<img src="assets/social-preview.svg" alt="repo-onboarding: a persistent, commit-tracked map of any codebase" width="100%">
 
 > **Description**: Persistent, commit-tracked codebase architecture and convention mapper for Claude Skills and AI coding agents.
 > **Topics**: `claude-skills` · `ai-agents` · `developer-tools` · `onboarding`
 
-`repo-onboarding` is a Claude Skill (`SKILL.md` + zero-dependency discovery scripts) that gives Claude an accurate, persistent mental map of any codebase it is dropped into. Instead of burning tokens re-scanning directories from scratch every session—or guessing from shallow filename matches—Claude builds a commit-tracked map in `.claude/repo-map/`, updates it incrementally via `git diff <last-hash>..HEAD --stat`, and answers `"how does X work here?"` or `"where do I change Y?"` with verified `file:line` citations.
+`repo-onboarding` is a Claude Skill (`SKILL.md` + zero-dependency discovery scripts) that gives Claude an accurate, persistent mental map of any codebase it is dropped into. Instead of burning tokens re-scanning directories from scratch every session — or guessing from shallow filename matches — Claude builds a commit-tracked map in `.claude/repo-map/`, updates it incrementally via `git diff <last-hash>..HEAD --stat`, and answers `"how does X work here?"` or `"where do I change Y?"` with verified `file:line` citations.
 
 ## Why `repo-onboarding`?
 
@@ -17,6 +19,18 @@ When LLMs onboard to unfamiliar codebases, they usually re-derive structure from
 - **First Invocation (Full Structural Scan)**: Runs a language-agnostic discovery pass (`scripts/scan.sh`) and synthesizes five structured files into `.claude/repo-map/`.
 - **Subsequent Invocations (Git Commit Diff Check)**: Compares `last_built_commit` in `.claude/repo-map/index.json` against `HEAD` (`scripts/diff-check.sh`). If unchanged, the map is used immediately. If commits landed, only the affected directories are re-scanned (`git diff <last-hash>..HEAD --stat`) and patched in place.
 - **Evidence-First Q&A**: Uses `.claude/repo-map/index.json` as a fast routing table to locate candidate files, then reads those actual source files before answering so every response cites exact `file:line` references and reconciles any uncommitted local changes.
+
+## How It Works
+
+![repo-onboarding architecture](assets/architecture.svg)
+
+1. **Scan**: `scripts/scan.sh` walks the repository and collects directory topology, manifest declarations, entry-point candidates, and convention samples, each tagged with a `file:line` reference.
+2. **Map**: Claude reads the primary entry points and core modules the scan surfaced, then writes `architecture.md`, `modules.md`, `entry-points.md`, `conventions.md`, and `index.json` into `.claude/repo-map/`.
+3. **Route and Read**: A question is routed through `index.json` to a short list of candidate files. Those files are opened and read before anything is claimed.
+4. **Answer**: The reply cites the exact `file:line` locations it verified, and points at the conventions file so any change matches existing style.
+5. **Update**: On the next invocation, `scripts/diff-check.sh` compares `last_built_commit` with `HEAD`. If commits landed, only the affected directories are re-scanned and the affected map sections are patched in place; untouched descriptions are left alone.
+
+The map is a routing layer and a summary. It is never the sole source for a code-level claim.
 
 ## What Gets Generated in `.claude/repo-map/`
 
@@ -54,7 +68,7 @@ mkdir -p ~/.claude/skills
 git clone https://github.com/janghotan/repo-onboarding.git ~/.claude/skills/repo-onboarding
 ```
 
-Both `scripts/scan.sh` (`scripts/scan.py`) and `scripts/diff-check.sh` use only standard POSIX utilities, `git`, and the Python 3 standard library—zero third-party dependencies required.
+Both `scripts/scan.sh` (`scripts/scan.py`) and `scripts/diff-check.sh` use only standard POSIX utilities, `git`, and the Python 3 standard library — zero third-party dependencies required.
 
 ## Usage Examples
 
@@ -127,6 +141,19 @@ Explore [`examples/taskpulse-service/`](examples/taskpulse-service/) to inspect 
 - [`examples/taskpulse-service/.claude/repo-map/index.json`](examples/taskpulse-service/.claude/repo-map/index.json)
 - [`examples/taskpulse-service/sample-qa-walkthrough.md`](examples/taskpulse-service/sample-qa-walkthrough.md)
 - [`examples/taskpulse-service/incremental-diff-output.txt`](examples/taskpulse-service/incremental-diff-output.txt)
+
+## Development
+
+Run the same checks CI runs before opening a pull request:
+
+```bash
+python3 scripts/validate.py .          # SKILL.md frontmatter, links, placeholders, example map
+python3 -m py_compile scripts/scan.py  # syntax check
+shellcheck scripts/scan.sh scripts/diff-check.sh
+bash scripts/scan.sh . --format json | python3 -m json.tool > /dev/null
+```
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the design principles and the full pull request checklist.
 
 ## License
 

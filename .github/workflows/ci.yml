@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: validate skill and scripts (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate SKILL.md, links, and example map
+        run: python3 scripts/validate.py .
+
+      - name: Lint Python scripts
+        run: |
+          python3 -m py_compile scripts/scan.py scripts/validate.py
+          pip install --quiet ruff==0.6.9
+          ruff check --select E,F,W,B --ignore E501 scripts/scan.py scripts/validate.py
+
+      - name: Shellcheck shell scripts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck
+          shellcheck -S warning scripts/scan.sh scripts/diff-check.sh
+
+      - name: Run discovery against the example fixture
+        run: |
+          bash scripts/scan.sh examples/taskpulse-service --format markdown > /tmp/scan.md
+          grep -q "Repository Structural Discovery Report" /tmp/scan.md
+          bash scripts/scan.sh examples/taskpulse-service --format json > /tmp/scan.json
+          python3 -m json.tool /tmp/scan.json > /dev/null
+
+      - name: Run discovery against this repository
+        run: |
+          bash scripts/scan.sh . --format json | python3 -m json.tool > /dev/null
+          bash scripts/scan.sh . --paths scripts examples > /dev/null
+
+      - name: Check incremental diff states
+        run: |
+          bash scripts/diff-check.sh HEAD . | tee /tmp/diff-self.txt
+          grep -Eq "^STATUS: (UP_TO_DATE|UP_TO_DATE_WITH_UNCOMMITTED_CHANGES|INCREMENTAL_UPDATE_NEEDED)$" /tmp/diff-self.txt
+          bash scripts/diff-check.sh deadbeef . | grep -q "^STATUS: FULL_SCAN_NEEDED$"
+          mkdir -p /tmp/not-a-repo
+          bash scripts/diff-check.sh --from-index /tmp/not-a-repo | grep -q "^STATUS: NO_GIT_REPO$"
+
+      - name: Validate example repo-map JSON
+        run: python3 -m json.tool examples/taskpulse-service/.claude/repo-map/index.json > /dev/null
+
+      - name: Check READMEs stay in sync
+        run: |
+          test -f README.md
+          test -f README.zh-CN.md
+          grep -q "README.zh-CN.md" README.md
+          grep -q "README.md" README.zh-CN.md
