@@ -22,8 +22,43 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Validate SKILL.md, links, and example map
+      - name: Validate SKILL.md, links, example map, and plugin manifests
         run: python3 scripts/validate.py .
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate plugin marketplace with Claude Code
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          claude plugin validate . --strict
+
+      - name: Reject schema-breaking plugin manifests
+        run: |
+          set -euo pipefail
+          backup=$(mktemp -d)
+          cp .claude-plugin/marketplace.json .claude-plugin/plugin.json "$backup/"
+          restore() { cp "$backup/marketplace.json" "$backup/plugin.json" .claude-plugin/; }
+          trap restore EXIT
+
+          # Bad version (not semver) must fail.
+          python3 -c "import json;p='.claude-plugin/plugin.json';d=json.load(open(p));d['version']='1.0';json.dump(d,open(p,'w'),indent=2)"
+          if python3 scripts/validate.py . >/dev/null 2>&1; then echo 'non-semver version was accepted'; exit 1; fi
+          restore
+
+          # Uppercase / spaced plugin name must fail.
+          python3 -c "import json;p='.claude-plugin/plugin.json';d=json.load(open(p));d['name']='Repo Onboarding';json.dump(d,open(p,'w'),indent=2)"
+          if python3 scripts/validate.py . >/dev/null 2>&1; then echo 'invalid plugin name was accepted'; exit 1; fi
+          restore
+
+          # Absolute source path must fail.
+          python3 -c "import json;p='.claude-plugin/marketplace.json';d=json.load(open(p));d['plugins'][0]['source']='/abs/path';json.dump(d,open(p,'w'),indent=2)"
+          if python3 scripts/validate.py . >/dev/null 2>&1; then echo 'absolute source path was accepted'; exit 1; fi
+          restore
+
+          python3 scripts/validate.py .
 
       - name: Lint Python scripts
         run: |

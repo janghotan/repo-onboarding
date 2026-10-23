@@ -45,13 +45,26 @@ The map is a routing layer and a summary. It is never the sole source for a code
 
 ## Installation
 
-### Option 1: Claude Code Plugin / Marketplace Style
+### Option 1: Install via the Claude Code plugin marketplace
 
-Install as a Claude Code plugin/skill via `/plugin`:
+This repository is its own plugin marketplace (`.claude-plugin/marketplace.json`), so Claude Code can install the skill directly. One step on Claude Code 2.1.275 or later:
+
+```text
+/plugin install repo-onboarding --marketplace janghotan/repo-onboarding
+```
+
+Or add the marketplace first, then install from it:
 
 ```text
 /plugin marketplace add janghotan/repo-onboarding
-/plugin install repo-onboarding
+/plugin install repo-onboarding@repo-onboarding
+```
+
+To check what was installed and remove it later:
+
+```text
+/plugin list
+/plugin uninstall repo-onboarding@repo-onboarding
 ```
 
 ### Option 2: Standalone `.claude/skills/` Drop-In (Per-Repo or Global)

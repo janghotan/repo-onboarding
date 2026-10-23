@@ -133,6 +133,123 @@ def check_example_map(root: Path, errors: List[str]) -> None:
             errors.append(f"example index.json is missing required key '{key}'")
 
 
+PLUGIN_NAME_RE = re.compile(r"^[a-z][a-z0-9]*(-[a-z0-9]+)*$")
+SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$")
+
+
+def check_plugin_manifests(root: Path, errors: List[str]) -> None:
+    """Validate the Claude Code marketplace and plugin manifests.
+
+    Catches schema-breaking edits (bad name format, non-semver version, missing
+    required fields, paths that escape the plugin root) before they reach a user
+    running `/plugin marketplace add`.
+    """
+    plugin_dir = root / ".claude-plugin"
+    marketplace_path = plugin_dir / "marketplace.json"
+    plugin_path = plugin_dir / "plugin.json"
+
+    def load(path: Path) -> dict:
+        if not path.exists():
+            errors.append(f"missing plugin manifest: {path.relative_to(root)}")
+            return {}
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            errors.append(f"{path.relative_to(root)} does not parse: {exc}")
+            return {}
+        if not isinstance(data, dict):
+            errors.append(f"{path.relative_to(root)} must contain a JSON object")
+            return {}
+        return data
+
+    marketplace = load(marketplace_path)
+    plugin = load(plugin_path)
+
+    if marketplace:
+        name = marketplace.get("name", "")
+        if not name:
+            errors.append("marketplace.json is missing required field 'name'")
+        elif not PLUGIN_NAME_RE.match(name):
+            errors.append(f"marketplace.json name '{name}' must be lowercase kebab-case")
+        if not marketplace.get("owner"):
+            errors.append("marketplace.json is missing required field 'owner'")
+        plugins = marketplace.get("plugins")
+        if not isinstance(plugins, list) or not plugins:
+            errors.append("marketplace.json must list at least one plugin in 'plugins'")
+            plugins = []
+        listed = set()
+        for entry in plugins:
+            if not isinstance(entry, dict):
+                errors.append("marketplace.json has a non-object entry in 'plugins'")
+                continue
+            entry_name = entry.get("name", "")
+            if not entry_name:
+                errors.append("marketplace.json plugin entry is missing 'name'")
+            elif not PLUGIN_NAME_RE.match(entry_name):
+                errors.append(
+                    f"marketplace.json plugin name '{entry_name}' must be lowercase kebab-case"
+                )
+            else:
+                listed.add(entry_name)
+            if not entry.get("description"):
+                errors.append(
+                    f"marketplace.json plugin '{entry_name}' is missing 'description'"
+                )
+            source = entry.get("source")
+            if not source:
+                errors.append(f"marketplace.json plugin '{entry_name}' is missing 'source'")
+            elif isinstance(source, str):
+                if not source.startswith("./"):
+                    errors.append(
+                        f"marketplace.json plugin '{entry_name}' source '{source}' "
+                        "must be a relative path starting with './'"
+                    )
+                elif not (root / source).resolve().exists():
+                    errors.append(
+                        f"marketplace.json plugin '{entry_name}' source '{source}' does not exist"
+                    )
+            elif not isinstance(source, dict):
+                errors.append(
+                    f"marketplace.json plugin '{entry_name}' source must be a string or object"
+                )
+
+        if plugin:
+            plugin_name = plugin.get("name", "")
+            if plugin_name and listed and plugin_name not in listed:
+                errors.append(
+                    f"plugin.json name '{plugin_name}' is not listed in marketplace.json"
+                )
+
+    if plugin:
+        name = plugin.get("name", "")
+        if not name:
+            errors.append("plugin.json is missing required field 'name'")
+        elif not PLUGIN_NAME_RE.match(name):
+            errors.append(f"plugin.json name '{name}' must be lowercase kebab-case")
+        version = plugin.get("version", "")
+        if not version:
+            errors.append("plugin.json is missing required field 'version'")
+        elif not SEMVER_RE.match(version):
+            errors.append(f"plugin.json version '{version}' must be MAJOR.MINOR.PATCH")
+        if not plugin.get("description"):
+            errors.append("plugin.json is missing required field 'description'")
+        if not plugin.get("author"):
+            errors.append("plugin.json is missing required field 'author'")
+        if not plugin.get("license"):
+            errors.append("plugin.json is missing required field 'license'")
+
+        icon = plugin_dir / "icon.png"
+        if not icon.exists():
+            errors.append(".claude-plugin/icon.png is missing (square PNG required)")
+
+        changelog = root / "CHANGELOG.md"
+        if version and changelog.exists():
+            if f"[{version}]" not in changelog.read_text(encoding="utf-8"):
+                errors.append(
+                    f"plugin.json version {version} has no matching [ {version} ] CHANGELOG entry"
+                )
+
+
 def main() -> int:
     root = Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
     errors: List[str] = []
@@ -146,6 +263,7 @@ def main() -> int:
     check_placeholders(root, errors)
     check_links(root, errors)
     check_example_map(root, errors)
+    check_plugin_manifests(root, errors)
 
     if errors:
         print("skill validation failed:", file=sys.stderr)

@@ -45,13 +45,26 @@ LLM 初到一个陌生代码库时，通常每个会话都要重新推导一遍�
 
 ## 安装
 
-### 方式一：Claude Code 插件 / 市场安装
+### 方式一：通过 Claude Code 插件市场安装
 
-通过 `/plugin` 作为 Claude Code 插件或 Skill 安装：
+本仓库自身就是一个插件市场（`.claude-plugin/marketplace.json`），因此 Claude Code 可以直接安装这个 Skill。在 Claude Code 2.1.275 及以上版本中，一条命令即可完成：
+
+```text
+/plugin install repo-onboarding --marketplace janghotan/repo-onboarding
+```
+
+也可以先添加市场，再从市场中安装：
 
 ```text
 /plugin marketplace add janghotan/repo-onboarding
-/plugin install repo-onboarding
+/plugin install repo-onboarding@repo-onboarding
+```
+
+查看安装结果，或之后卸载：
+
+```text
+/plugin list
+/plugin uninstall repo-onboarding@repo-onboarding
 ```
 
 ### 方式二：直接放入 `.claude/skills/`（按仓库或全局）

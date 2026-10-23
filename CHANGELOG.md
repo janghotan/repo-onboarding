@@ -4,6 +4,22 @@ All notable changes to `repo-onboarding` are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-10-23
+
+Installable straight from Claude Code's plugin system, with the standalone skill drop-in
+unchanged.
+
+### Added
+
+- **`.claude-plugin/marketplace.json`**: Declares this repository as its own plugin marketplace containing one plugin, `repo-onboarding`, so `/plugin marketplace add janghotan/repo-onboarding` works.
+- **`.claude-plugin/plugin.json`**: Plugin manifest (name, version, description, author, license, keywords) for `/plugin install repo-onboarding@repo-onboarding`. The skill itself is picked up from the repository root by default discovery, so `SKILL.md` and `scripts/` are served unchanged.
+- **`.claude-plugin/icon.png`**: 512x512 plugin listing icon.
+- **Manifest validation**: `scripts/validate.py` now checks both manifests (kebab-case names, semver version, required fields, plugin listed by the marketplace, relative `./` source paths that exist, icon presence, and a matching CHANGELOG entry), and CI runs `claude plugin validate .` on every push.
+
+### Changed
+
+- **`README.md` / `README.zh-CN.md`**: New "Install via the Claude Code plugin marketplace" section with the one-step and two-step commands; the manual `.claude/skills/` clone instructions remain as the alternative.
+
 ## [0.1.0] - 2026-10-23
 
 First public release. A Claude Skill that builds a persistent, commit-tracked map of any
