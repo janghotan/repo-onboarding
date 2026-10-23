@@ -1,0 +1,21 @@
+{
+  "name": "repo-onboarding",
+  "description": "Official marketplace for repo-onboarding, a Claude Skill that builds a persistent, commit-tracked map of any codebase.",
+  "owner": {
+    "name": "janghotan",
+    "url": "https://github.com/janghotan"
+  },
+  "plugins": [
+    {
+      "name": "repo-onboarding",
+      "source": "./",
+      "description": "Build and maintain a persistent, commit-tracked structural map of any codebase in .claude/repo-map/ and answer codebase questions using verified file:line evidence.",
+      "author": {
+        "name": "janghotan",
+        "url": "https://github.com/janghotan"
+      },
+      "category": "development",
+      "homepage": "https://github.com/janghotan/repo-onboarding"
+    }
+  ]
+}

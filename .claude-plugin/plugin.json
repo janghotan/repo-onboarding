@@ -1,0 +1,19 @@
+{
+  "name": "repo-onboarding",
+  "version": "0.2.0",
+  "description": "Build and maintain a persistent, commit-tracked structural map of any codebase in .claude/repo-map/ and answer codebase questions using verified file:line evidence.",
+  "author": {
+    "name": "janghotan",
+    "url": "https://github.com/janghotan"
+  },
+  "homepage": "https://github.com/janghotan/repo-onboarding",
+  "repository": "https://github.com/janghotan/repo-onboarding",
+  "license": "Apache-2.0",
+  "keywords": [
+    "codebase-onboarding",
+    "architecture",
+    "code-navigation",
+    "conventions",
+    "claude-skill"
+  ]
+}
