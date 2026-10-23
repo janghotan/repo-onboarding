@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 660" width="980" height="660" role="img" aria-labelledby="title desc" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 660" width="1080" height="660" role="img" aria-labelledby="title desc" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
   <title id="title">repo-onboarding architecture</title>
-  <desc id="desc">Flow diagram: a repository is scanned by scan.sh/scan.py, which writes five map files into .claude/repo-map/. A question routes through index.json to targeted source files, producing a grounded answer with file:line citations. In between invocations, diff-check.sh compares the last built commit with HEAD and patches only the affected map sections.</desc>
+  <desc id="desc">Flow diagram. A target repository is scanned by scan.sh and scan.py, which writes five map files into .claude/repo-map/. A question routes through index.json to a short list of candidate source files, which are read before a grounded answer with file:line citations is produced. Between invocations, diff-check.sh compares last_built_commit with HEAD and patches only the affected map sections.</desc>
 
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -11,35 +11,31 @@
     </marker>
   </defs>
 
-  <g fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#arrow)" color="currentColor">
-    <!-- repository -> scan -->
+  <!-- Primary flow -->
+  <g fill="none" stroke="currentColor" stroke-width="1.6" color="currentColor" marker-end="url(#arrow)">
     <path d="M 168 118 H 232"/>
-    <!-- scan -> map dir -->
     <path d="M 392 118 H 456"/>
-    <!-- map dir -> index lookup -->
-    <path d="M 724 150 V 232 H 300" marker-end="url(#arrow)"/>
-    <!-- question -> index lookup -->
+    <path d="M 724 150 V 232 H 448 V 264"/>
     <path d="M 168 300 H 232"/>
-    <!-- index lookup -> targeted read -->
     <path d="M 448 300 H 512"/>
-    <!-- targeted read -> answer -->
-    <path d="M 692 300 H 756"/>
-    <!-- targeted read -> source files (down) -->
-    <path d="M 602 332 V 404 H 520"/>
-    <!-- source files -> targeted read (up) -->
-    <path d="M 520 452 H 628 V 332"/>
+    <path d="M 692 300 H 740"/>
+    <path d="M 602 340 V 404"/>
+  </g>
+
+  <!-- Source files back up to targeted read -->
+  <g fill="none" stroke="currentColor" stroke-width="1.6" color="currentColor" marker-end="url(#arrow)">
+    <path d="M 520 434 H 654 V 348"/>
   </g>
 
   <!-- Incremental update loop -->
-  <g fill="none" stroke="#3b82f6" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#arrowAccent)">
-    <path d="M 590 116 H 800 V 176 H 812"/>
-    <path d="M 812 258 V 470 H 812"/>
-    <path d="M 866 366 H 906 V 118 H 862"/>
+  <g fill="none" stroke="#3b82f6" stroke-width="1.8" stroke-dasharray="7 5">
+    <path d="M 724 96 H 875 V 180 H 900" marker-end="url(#arrowAccent)"/>
+    <path d="M 975 250 V 300" marker-end="url(#arrowAccent)"/>
+    <path d="M 975 396 V 480 H 590 V 166" marker-end="url(#arrowAccent)"/>
   </g>
 
-  <!-- Nodes -->
   <g font-size="15" text-anchor="middle">
-    <!-- Repository -->
+    <!-- Target repo -->
     <g>
       <rect x="24" y="86" width="144" height="64" rx="10" fill="currentColor" opacity="0.07"/>
       <rect x="24" y="86" width="144" height="64" rx="10" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.55"/>
@@ -47,7 +43,7 @@
       <text x="96" y="134" fill="currentColor" opacity="0.7" font-size="12.5">any language</text>
     </g>
 
-    <!-- scan -->
+    <!-- Scan -->
     <g>
       <rect x="232" y="74" width="160" height="88" rx="10" fill="#3b82f6" opacity="0.10"/>
       <rect x="232" y="74" width="160" height="88" rx="10" fill="none" stroke="#3b82f6" stroke-width="1.6"/>
@@ -56,7 +52,7 @@
       <text x="312" y="139" fill="currentColor" opacity="0.72" font-size="12">manifests + entry points</text>
     </g>
 
-    <!-- repo-map dir -->
+    <!-- Map directory -->
     <g>
       <rect x="456" y="62" width="268" height="104" rx="10" fill="currentColor" opacity="0.07"/>
       <rect x="456" y="62" width="268" height="104" rx="10" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.55"/>
@@ -71,10 +67,10 @@
       <rect x="24" y="270" width="144" height="60" rx="10" fill="currentColor" opacity="0.07"/>
       <rect x="24" y="270" width="144" height="60" rx="10" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.55"/>
       <text x="96" y="296" fill="currentColor" font-weight="600">Question</text>
-      <text x="96" y="314" fill="currentColor" opacity="0.7" font-size="12">"how does X work?"</text>
+      <text x="96" y="314" fill="currentColor" opacity="0.7" font-size="12">how does X work?</text>
     </g>
 
-    <!-- index lookup -->
+    <!-- Index lookup -->
     <g>
       <rect x="232" y="264" width="216" height="72" rx="10" fill="currentColor" opacity="0.07"/>
       <rect x="232" y="264" width="216" height="72" rx="10" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.55"/>
@@ -83,22 +79,22 @@
       <text x="340" y="328" fill="currentColor" opacity="0.72" font-size="12">no full-repo rescan</text>
     </g>
 
-    <!-- targeted read -->
+    <!-- Targeted read -->
     <g>
-      <rect x="512" y="260" width="180" height="80" rx="10" fill="#3b82f6" opacity="0.10"/>
-      <rect x="512" y="260" width="180" height="80" rx="10" fill="none" stroke="#3b82f6" stroke-width="1.6"/>
-      <text x="602" y="286" fill="currentColor" font-weight="600">Targeted read</text>
-      <text x="602" y="305" fill="currentColor" opacity="0.72" font-size="12">open the real files</text>
-      <text x="602" y="323" fill="currentColor" opacity="0.72" font-size="12">reconcile with the map</text>
+      <rect x="512" y="264" width="180" height="76" rx="10" fill="#3b82f6" opacity="0.10"/>
+      <rect x="512" y="264" width="180" height="76" rx="10" fill="none" stroke="#3b82f6" stroke-width="1.6"/>
+      <text x="602" y="290" fill="currentColor" font-weight="600">Targeted read</text>
+      <text x="602" y="309" fill="currentColor" opacity="0.72" font-size="12">open the real files</text>
+      <text x="602" y="327" fill="currentColor" opacity="0.72" font-size="12">reconcile with the map</text>
     </g>
 
     <!-- Answer -->
     <g>
-      <rect x="756" y="264" width="176" height="72" rx="10" fill="currentColor" opacity="0.07"/>
-      <rect x="756" y="264" width="176" height="72" rx="10" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.55"/>
-      <text x="844" y="291" fill="currentColor" font-weight="600">Grounded answer</text>
-      <text x="844" y="311" fill="currentColor" opacity="0.72" font-size="12">file:line citations</text>
-      <text x="844" y="328" fill="currentColor" opacity="0.72" font-size="12">convention evidence</text>
+      <rect x="740" y="264" width="150" height="72" rx="10" fill="currentColor" opacity="0.07"/>
+      <rect x="740" y="264" width="150" height="72" rx="10" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.55"/>
+      <text x="815" y="291" fill="currentColor" font-weight="600" font-size="14">Grounded answer</text>
+      <text x="815" y="310" fill="currentColor" opacity="0.72" font-size="11.5">file:line citations</text>
+      <text x="815" y="327" fill="currentColor" opacity="0.72" font-size="11.5">convention evidence</text>
     </g>
 
     <!-- Source files -->
@@ -111,36 +107,36 @@
 
     <!-- diff-check -->
     <g>
-      <rect x="740" y="150" width="144" height="108" rx="10" fill="#3b82f6" opacity="0.10"/>
-      <rect x="740" y="150" width="144" height="108" rx="10" fill="none" stroke="#3b82f6" stroke-width="1.6"/>
-      <text x="812" y="177" fill="currentColor" font-weight="600" font-size="14">diff-check.sh</text>
-      <text x="812" y="197" fill="currentColor" opacity="0.72" font-size="11.5">last_built_commit</text>
-      <text x="812" y="214" fill="currentColor" opacity="0.72" font-size="11.5">vs HEAD</text>
-      <text x="812" y="234" fill="currentColor" opacity="0.72" font-size="11.5">git diff --stat</text>
+      <rect x="900" y="146" width="150" height="104" rx="10" fill="#3b82f6" opacity="0.10"/>
+      <rect x="900" y="146" width="150" height="104" rx="10" fill="none" stroke="#3b82f6" stroke-width="1.6"/>
+      <text x="975" y="173" fill="currentColor" font-weight="600" font-size="14">diff-check.sh</text>
+      <text x="975" y="193" fill="currentColor" opacity="0.72" font-size="11.5">last_built_commit</text>
+      <text x="975" y="210" fill="currentColor" opacity="0.72" font-size="11.5">vs HEAD</text>
+      <text x="975" y="229" fill="currentColor" opacity="0.72" font-size="11.5">git diff --stat</text>
     </g>
 
-    <!-- patch sections -->
+    <!-- Patch map -->
     <g>
-      <rect x="740" y="286" width="144" height="88" rx="10" fill="#3b82f6" opacity="0.10"/>
-      <rect x="740" y="286" width="144" height="88" rx="10" fill="none" stroke="#3b82f6" stroke-width="1.6"/>
-      <text x="812" y="311" fill="currentColor" font-weight="600" font-size="13.5">Patch map</text>
-      <text x="812" y="329" fill="currentColor" opacity="0.72" font-size="11.5">affected sections</text>
-      <text x="812" y="346" fill="currentColor" opacity="0.72" font-size="11.5">shifted file:line</text>
-      <text x="812" y="363" fill="currentColor" opacity="0.72" font-size="11.5">in place only</text>
+      <rect x="900" y="300" width="150" height="96" rx="10" fill="#3b82f6" opacity="0.10"/>
+      <rect x="900" y="300" width="150" height="96" rx="10" fill="none" stroke="#3b82f6" stroke-width="1.6"/>
+      <text x="975" y="325" fill="currentColor" font-weight="600" font-size="13.5">Patch map</text>
+      <text x="975" y="343" fill="currentColor" opacity="0.72" font-size="11.5">affected sections</text>
+      <text x="975" y="360" fill="currentColor" opacity="0.72" font-size="11.5">shifted file:line</text>
+      <text x="975" y="377" fill="currentColor" opacity="0.72" font-size="11.5">in place only</text>
     </g>
   </g>
 
   <!-- Loop labels -->
-  <g font-size="12.5" fill="#3b82f6" font-family="inherit">
-    <text x="616" y="108">new commits landed</text>
-    <text x="920" y="240" transform="rotate(90 920 240)">rescan affected dirs only</text>
+  <g font-size="12.5" fill="#3b82f6">
+    <text x="800" y="140">new commits landed</text>
+    <text x="930" y="460" text-anchor="middle">rescan affected dirs only</text>
   </g>
 
-  <!-- Legend / footer -->
+  <!-- Legend -->
   <g font-size="12.5" fill="currentColor" opacity="0.62">
     <line x1="24" y1="606" x2="52" y2="606" stroke="currentColor" stroke-width="1.6"/>
-    <text x="60" y="610">first-invocation / question flow</text>
-    <line x1="300" y1="606" x2="328" y2="606" stroke="#3b82f6" stroke-width="1.8" stroke-dasharray="7 5"/>
-    <text x="336" y="610">incremental update loop</text>
+    <text x="60" y="610">first-invocation and question flow</text>
+    <line x1="320" y1="606" x2="348" y2="606" stroke="#3b82f6" stroke-width="1.8" stroke-dasharray="7 5"/>
+    <text x="356" y="610">incremental update loop</text>
   </g>
 </svg>
