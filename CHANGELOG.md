@@ -4,6 +4,21 @@ All notable changes to `repo-onboarding` are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-10-23
+
+Documents how to use the skill from AI coding agents other than Claude Code, with
+copy-pasteable snippets per agent.
+
+### Added
+
+- **`snippets/AGENTS.md.example`**: Ready-made `AGENTS.md` block for the cross-tool convention read by OpenAI Codex, Cursor, Windsurf / Devin Desktop, GitHub Copilot agents, and OpenCode.
+- **`snippets/cursor-repo-onboarding.mdc`**: Cursor project rule with `description` and `alwaysApply` frontmatter (`.cursor/rules/*.mdc`).
+- **`snippets/windsurf-repo-onboarding.md`**: Windsurf / Devin Desktop workspace rule with `trigger` frontmatter (`.devin/rules/` or `.windsurf/rules/`).
+- **`snippets/copilot-instructions.md`**: GitHub Copilot repository instruction block (`.github/copilot-instructions.md`).
+- **`snippets/aider-conventions.md`**: Aider conventions file plus the `.aider.conf.yml` `read:` entry that makes it permanent.
+- **`snippets/opencode.json.example`**: OpenCode `instructions` config pointing at `SKILL.md`.
+- **`README.md` / `README.zh-CN.md`**: New "Using repo-onboarding with other AI coding agents" section covering each verified convention, the plugin-marketplace-less reality, and the manual paste fallback that works with any file-reading agent.
+
 ## [0.2.0] - 2026-10-23
 
 Installable straight from Claude Code's plugin system, with the standalone skill drop-in

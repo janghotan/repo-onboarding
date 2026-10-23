@@ -1,0 +1,23 @@
+---
+description: "Codebase onboarding with the repo-onboarding skill: architecture overviews, how-does-X-work answers, and where-to-change guidance grounded in real file:line reads"
+alwaysApply: false
+---
+
+# Codebase onboarding (repo-onboarding)
+
+A `repo-onboarding` skill is available at `CLONE_PATH/SKILL.md`.
+
+When asked to onboard to this codebase, explain its architecture, answer "how does X work
+here", or say where to change Y, read `@CLONE_PATH/SKILL.md` and follow its process:
+
+- Run `CLONE_PATH/scripts/diff-check.sh --from-index .` first to check for an existing,
+  fresh map at `.claude/repo-map/`.
+- Build the map with `CLONE_PATH/scripts/scan.sh . --format markdown` on a first run, or
+  re-scan only the affected directories when the checker reports
+  `INCREMENTAL_UPDATE_NEEDED`.
+- Read the actual source files before claiming how anything works, and cite exact
+  `file:line` references.
+
+Note: this file must use the `.mdc` extension and live in `.cursor/rules/`; a plain `.md`
+file there is ignored by Cursor. Cursor also reads `AGENTS.md` at the project root, which
+is the simpler option if you do not want per-rule frontmatter.

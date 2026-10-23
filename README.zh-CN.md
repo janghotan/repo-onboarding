@@ -83,6 +83,118 @@ git clone https://github.com/janghotan/repo-onboarding.git ~/.claude/skills/repo
 
 `scripts/scan.sh`（`scripts/scan.py`）和 `scripts/diff-check.sh` 只使用标准 POSIX 工具、`git` 和 Python 3 标准库，无需任何第三方依赖。
 
+## 在其他 AI 编码代理中使用 repo-onboarding
+
+目前没有跨代理的统一安装方式。Claude Code 有插件市场，其他工具并没有。对其他所有代理来说，做法是一样的：把本仓库克隆到一个固定位置，然后在那个代理会自动加载的项目指令文件里加一小段指引，告诉它在做上手类工作之前先读 `SKILL.md`。
+
+技能本身没有任何变化，仍然是 `SKILL.md` 加 `scripts/`；它写出的地图也仍然落在目标仓库的 `.claude/repo-map/` 中。
+
+```bash
+git clone https://github.com/janghotan/repo-onboarding.git ~/.repo-onboarding
+```
+
+下面的片段中，`CLONE_PATH` 指你克隆到的绝对路径。所有片段也都已放在 [`snippets/`](snippets/) 目录中，可以直接复制文件，而不必手工编辑。
+
+### 支持项目指令文件的任意代理（推荐默认方案）
+
+`AGENTS.md` 是一种开放格式，目前 OpenAI Codex、Cursor、Windsurf / Devin Desktop、GitHub Copilot 代理和 OpenCode 都会读取。把 [`snippets/AGENTS.md.example`](snippets/AGENTS.md.example) 复制到项目根目录并改名为 `AGENTS.md`，再把 `CLONE_PATH` 换成实际路径：
+
+```markdown
+## Codebase onboarding (repo-onboarding)
+
+When asked to onboard to this codebase, give an architecture overview, explain how
+something works here, or where to make a change, read `CLONE_PATH/SKILL.md` first and
+follow its process: run `scripts/diff-check.sh` to check for an existing map at
+`.claude/repo-map/`, scan on a first run or re-scan only the affected directories after
+new commits, and always read the real source files before citing `file:line` locations.
+```
+
+### Cursor
+
+Cursor 从 `.cursor/rules/*.mdc` 读取项目规则（扩展名必须是 `.mdc`；放在该目录下的普通 `.md` 文件因为没有 frontmatter 会被忽略）。把 [`snippets/cursor-repo-onboarding.mdc`](snippets/cursor-repo-onboarding.mdc) 复制为 `.cursor/rules/repo-onboarding.mdc`。它的 frontmatter 使用 `description` 加 `alwaysApply: false`，因此 Agent 会在任务匹配时引入该规则；若希望每个会话都加载，改成 `alwaysApply: true`。
+
+```markdown
+---
+description: "Codebase onboarding with the repo-onboarding skill"
+alwaysApply: false
+---
+
+When asked to onboard to this codebase, explain its architecture, answer "how does X work
+here", or say where to change Y, read `CLONE_PATH/SKILL.md` and follow its process. Cite
+real `file:line` references.
+```
+
+Cursor 也会读取项目根目录和子目录中的 `AGENTS.md`，如果不想写规则 frontmatter，这是更简单的选择。
+
+### Windsurf / Devin Desktop
+
+Windsurf 从 `.devin/rules/*.md`（首选）或 `.windsurf/rules/*.md`（兼容旧版）读取工作区规则，也仍然读取旧式的单文件 `.windsurfrules`。把 [`snippets/windsurf-repo-onboarding.md`](snippets/windsurf-repo-onboarding.md) 复制为 `.devin/rules/repo-onboarding.md`。激活方式由 frontmatter 中的 `trigger` 控制：
+
+```markdown
+---
+trigger: model_decision
+description: Codebase onboarding with the repo-onboarding skill
+---
+
+When asked to onboard to this codebase, or to explain how something works here, read
+`CLONE_PATH/SKILL.md` and follow its process. Cite real `file:line` references.
+```
+
+`trigger` 可取 `always_on`、`model_decision`、`glob` 或 `manual`。项目根目录的 `AGENTS.md` 也会被读取，并且始终生效。
+
+### GitHub Copilot
+
+Copilot 从 `.github/copilot-instructions.md` 读取仓库级指令。把 [`snippets/copilot-instructions.md`](snippets/copilot-instructions.md) 复制到该位置：
+
+```markdown
+# Codebase onboarding (repo-onboarding)
+
+When asked to onboard to this codebase, explain how something works here, or say where to
+make a change, read `CLONE_PATH/SKILL.md` first and follow its process. Cite real
+`file:line` references.
+```
+
+若需按路径生效的指令，Copilot 使用 `.github/instructions/NAME.instructions.md`，并在 frontmatter 中用 `applyTo:` 指定 glob。Copilot 代理也会读取目录树中最近的 `AGENTS.md`，或根目录的 `CLAUDE.md`。
+
+### OpenAI Codex
+
+Codex 读取 `AGENTS.md`，会把从项目根目录到当前目录沿途找到的每一个都拼接起来（同目录下的 `AGENTS.override.md` 优先）。直接使用 [`snippets/AGENTS.md.example`](snippets/AGENTS.md.example) 作为项目的 `AGENTS.md` 即可，无需额外配置。也可以通过 Codex 配置中的 `project_doc_fallback_filenames` 增加备用文件名。
+
+### OpenCode
+
+OpenCode 读取 `AGENTS.md`（根目录的 `CLAUDE.md` 作为回退），并且可以在 `opencode.json` 的 `instructions` 字段中额外指定指令文件，包括本技能的 `SKILL.md`：
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["CLONE_PATH/SKILL.md"]
+}
+```
+
+参见 [`snippets/opencode.json.example`](snippets/opencode.json.example)。OpenCode 也会发现 `~/.claude/skills/` 下的 Claude Code 技能，因此方式二的手动放入安装同样适用于它。
+
+### Aider
+
+Aider 默认并不会自动加载约定文件，但它有明确的机制：`--read` 会把文件标记为只读并保留在会话中，而在 `.aider.conf.yml` 中设置 `read` 可以让它长期生效。
+
+```yaml
+# .aider.conf.yml
+read: [CONVENTIONS.md]
+```
+
+把 [`snippets/aider-conventions.md`](snippets/aider-conventions.md) 复制到项目里并命名为 `CONVENTIONS.md`。
+
+### 其他代理，以及永远可用的兜底方案
+
+如果你的代理支持持久的项目指令文件，就参照上面 `AGENTS.md` 的措辞，让它指向 `CLONE_PATH/SKILL.md`。如果不支持，可以把仓库克隆到任意位置，然后在第一条消息里这样说：
+
+```text
+Read /absolute/path/to/repo-onboarding/SKILL.md and follow it before answering. When you
+need the structural scan, run its scripts/scan.sh and scripts/diff-check.sh.
+```
+
+只要代理能读取文件，这种手动粘贴的方式就管用，包括上面没有列出的工具。欢迎提交 PR 补充你验证过的其他代理约定，详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
 ## 使用示例
 
 ### 1. 首次上手与架构概览
