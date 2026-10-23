@@ -22,7 +22,7 @@ LLM 初到一个陌生代码库时，通常每个会话都要重新推导一遍�
 
 ## 工作原理
 
-![repo-onboarding 架构图](assets/architecture.svg)
+![repo-onboarding 架构图](assets/architecture.zh-CN.svg)
 
 1. **扫描**：`scripts/scan.sh` 遍历仓库，收集目录结构、清单声明、入口候选点和约定样本，每一项都带有 `file:line` 引用。
 2. **建图**：Claude 阅读扫描结果中浮现的主要入口和核心模块，然后把 `architecture.md`、`modules.md`、`entry-points.md`、`conventions.md` 和 `index.json` 写入 `.claude/repo-map/`。

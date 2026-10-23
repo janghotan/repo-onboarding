@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 660" width="1080" height="660" role="img" aria-labelledby="title desc" font-family="ui-sans-serif, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Source Han Sans SC', sans-serif">
+  <title id="title">repo-onboarding 架构图</title>
+  <desc id="desc">流程图。scan.sh 与 scan.py 扫描目标仓库，并把五份地图文件写入 .claude/repo-map/。提问时先经 index.json 路由到少量候选源文件，读取这些文件之后再给出带 file:line 引用的有据回答。两次调用之间，diff-check.sh 比较 last_built_commit 与 HEAD，只修补受影响的地图章节。</desc>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowAccent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1080" height="660" fill="#ffffff"/>
+
+  <g fill="none" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)">
+    <path d="M 168 118 H 232"/>
+    <path d="M 392 118 H 456"/>
+    <path d="M 724 150 V 232 H 448 V 264"/>
+    <path d="M 168 300 H 232"/>
+    <path d="M 448 300 H 512"/>
+    <path d="M 692 300 H 740"/>
+    <path d="M 602 340 V 404"/>
+    <path d="M 520 434 H 654 V 348"/>
+  </g>
+
+  <g fill="none" stroke="#2563eb" stroke-width="1.8" stroke-dasharray="7 5">
+    <path d="M 724 96 H 875 V 180 H 900" marker-end="url(#arrowAccent)"/>
+    <path d="M 975 250 V 300" marker-end="url(#arrowAccent)"/>
+    <path d="M 975 396 V 480 H 590 V 166" marker-end="url(#arrowAccent)"/>
+  </g>
+
+  <g font-size="15" text-anchor="middle">
+    <g>
+      <rect x="24" y="86" width="144" height="64" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+      <text x="96" y="115" fill="#0f172a" font-weight="600">目标仓库</text>
+      <text x="96" y="134" fill="#64748b" font-size="12.5">任意语言</text>
+    </g>
+
+    <g>
+      <rect x="232" y="74" width="160" height="88" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+      <text x="312" y="102" fill="#0f172a" font-weight="600">scan.sh / scan.py</text>
+      <text x="312" y="121" fill="#475569" font-size="12">结构化发现</text>
+      <text x="312" y="139" fill="#475569" font-size="12">清单 + 入口点</text>
+    </g>
+
+    <g>
+      <rect x="456" y="62" width="268" height="104" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+      <text x="590" y="88" fill="#0f172a" font-weight="600">.claude/repo-map/</text>
+      <text x="590" y="110" fill="#334155" font-size="12.5">architecture.md · modules.md</text>
+      <text x="590" y="128" fill="#334155" font-size="12.5">entry-points.md · conventions.md</text>
+      <text x="590" y="146" fill="#334155" font-size="12.5">index.json</text>
+    </g>
+
+    <g>
+      <rect x="24" y="270" width="144" height="60" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+      <text x="96" y="296" fill="#0f172a" font-weight="600">提问</text>
+      <text x="96" y="314" fill="#64748b" font-size="12">X 是怎么工作的？</text>
+    </g>
+
+    <g>
+      <rect x="232" y="264" width="216" height="72" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+      <text x="340" y="291" fill="#0f172a" font-weight="600">index.json 路由</text>
+      <text x="340" y="311" fill="#475569" font-size="12">主题 → 候选文件</text>
+      <text x="340" y="328" fill="#475569" font-size="12">无需全仓重扫</text>
+    </g>
+
+    <g>
+      <rect x="512" y="264" width="180" height="76" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+      <text x="602" y="290" fill="#0f172a" font-weight="600">定向阅读</text>
+      <text x="602" y="309" fill="#475569" font-size="12">打开真实源文件</text>
+      <text x="602" y="327" fill="#475569" font-size="12">与地图相互校正</text>
+    </g>
+
+    <g>
+      <rect x="740" y="264" width="150" height="72" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+      <text x="815" y="291" fill="#0f172a" font-weight="600" font-size="14">有据回答</text>
+      <text x="815" y="310" fill="#475569" font-size="11.5">file:line 引用</text>
+      <text x="815" y="327" fill="#475569" font-size="11.5">约定证据</text>
+    </g>
+
+    <g>
+      <rect x="324" y="404" width="196" height="60" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+      <text x="422" y="429" fill="#0f172a" font-weight="600">源文件</text>
+      <text x="422" y="447" fill="#64748b" font-size="12">地图负责路由，代码说了算</text>
+    </g>
+
+    <g>
+      <rect x="900" y="146" width="150" height="104" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+      <text x="975" y="173" fill="#0f172a" font-weight="600" font-size="14">diff-check.sh</text>
+      <text x="975" y="193" fill="#475569" font-size="11.5">last_built_commit</text>
+      <text x="975" y="210" fill="#475569" font-size="11.5">对比 HEAD</text>
+      <text x="975" y="229" fill="#475569" font-size="11.5">git diff --stat</text>
+    </g>
+
+    <g>
+      <rect x="900" y="300" width="150" height="96" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+      <text x="975" y="325" fill="#0f172a" font-weight="600" font-size="13.5">修补地图</text>
+      <text x="975" y="343" fill="#475569" font-size="11.5">仅受影响章节</text>
+      <text x="975" y="360" fill="#475569" font-size="11.5">更新位移的 file:line</text>
+      <text x="975" y="377" fill="#475569" font-size="11.5">就地修改</text>
+    </g>
+  </g>
+
+  <g font-size="12.5" fill="#2563eb">
+    <text x="800" y="140">有新提交</text>
+    <text x="930" y="460" text-anchor="middle">仅重扫受影响的目录</text>
+  </g>
+
+  <g font-size="12.5" fill="#475569">
+    <line x1="24" y1="606" x2="52" y2="606" stroke="#475569" stroke-width="1.6"/>
+    <text x="60" y="610">首次调用与提问流程</text>
+    <line x1="320" y1="606" x2="348" y2="606" stroke="#2563eb" stroke-width="1.8" stroke-dasharray="7 5"/>
+    <text x="356" y="610">增量更新循环</text>
+  </g>
+</svg>
