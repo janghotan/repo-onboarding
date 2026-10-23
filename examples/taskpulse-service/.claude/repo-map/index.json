@@ -1,0 +1,131 @@
+{
+  "schema_version": "1.0",
+  "repo_name": "taskpulse",
+  "last_built_commit": "e2a4eb25e5ecb1f799bb9fdddfaa5995c66fdf93",
+  "last_built_branch": "main",
+  "generated_at": "2026-10-23T10:55:00Z",
+  "topics": {
+    "authentication": [
+      "src/api/auth.py",
+      "src/config.py",
+      "src/core/errors.py"
+    ],
+    "api_routes": [
+      "src/api/routes.py",
+      "src/main.py"
+    ],
+    "task_enqueue_and_lifecycle": [
+      "src/storage/repository.py",
+      "src/api/routes.py",
+      "src/cli.py"
+    ],
+    "task_cancellation": [
+      "src/storage/repository.py",
+      "src/api/routes.py",
+      "src/core/errors.py"
+    ],
+    "worker_dispatch_and_retries": [
+      "src/workers/dispatcher.py",
+      "src/storage/repository.py",
+      "src/config.py"
+    ],
+    "configuration": [
+      "src/config.py",
+      "pyproject.toml"
+    ],
+    "error_handling": [
+      "src/core/errors.py",
+      "src/api/routes.py",
+      "src/storage/repository.py",
+      "src/workers/dispatcher.py"
+    ],
+    "logging": [
+      "src/core/logger.py",
+      "src/storage/repository.py",
+      "src/workers/dispatcher.py"
+    ],
+    "cli": [
+      "src/cli.py",
+      "pyproject.toml"
+    ],
+    "testing": [
+      "tests/test_taskpulse.py"
+    ]
+  },
+  "modules": {
+    ".": {
+      "summary": "Project manifest (pyproject.toml) and developer task runner (Makefile)",
+      "key_files": [
+        "pyproject.toml",
+        "Makefile"
+      ],
+      "depends_on": []
+    },
+    "src": {
+      "summary": "Top-level application bootstrap (main.py), environment configuration (config.py), and CLI (cli.py)",
+      "key_files": [
+        "src/main.py",
+        "src/config.py",
+        "src/cli.py"
+      ],
+      "depends_on": [
+        "src/api",
+        "src/core",
+        "src/storage"
+      ]
+    },
+    "src/api": {
+      "summary": "HTTP API token authentication and route handlers for task creation, inspection, and cancellation",
+      "key_files": [
+        "src/api/auth.py",
+        "src/api/routes.py"
+      ],
+      "depends_on": [
+        "src/config",
+        "src/core",
+        "src/storage"
+      ]
+    },
+    "src/core": {
+      "summary": "Shared domain exception hierarchy and single-line JSON structured logging",
+      "key_files": [
+        "src/core/errors.py",
+        "src/core/logger.py"
+      ],
+      "depends_on": []
+    },
+    "src/storage": {
+      "summary": "SQLite persistence layer managing the tasks table and PENDING/DELIVERED/DEAD_LETTER/CANCELLED state transitions",
+      "key_files": [
+        "src/storage/repository.py"
+      ],
+      "depends_on": [
+        "src/core"
+      ]
+    },
+    "src/workers": {
+      "summary": "Background polling worker and outbound HTTP webhook delivery engine",
+      "key_files": [
+        "src/workers/dispatcher.py"
+      ],
+      "depends_on": [
+        "src/config",
+        "src/core",
+        "src/storage"
+      ]
+    },
+    "tests": {
+      "summary": "Pytest unit and integration test suite covering API routes, auth, and worker dead-lettering",
+      "key_files": [
+        "tests/test_taskpulse.py"
+      ],
+      "depends_on": [
+        "src/api",
+        "src/config",
+        "src/core",
+        "src/storage",
+        "src/workers"
+      ]
+    }
+  }
+}

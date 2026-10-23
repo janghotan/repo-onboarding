@@ -1,0 +1,69 @@
+STATUS: INCREMENTAL_UPDATE_NEEDED
+LAST_BUILT_COMMIT: 474926e43d1be1e144298853d7305ea25f4b2cd6
+CURRENT_HEAD: e2a4eb25e5ecb1f799bb9fdddfaa5995c66fdf93
+DIRTY_WORKING_TREE: false
+
+=== DIFF STAT (474926e43d1be1e144298853d7305ea25f4b2cd6..e2a4eb25e5ecb1f799bb9fdddfaa5995c66fdf93) ===
+ src/api/routes.py         |  6 ++++++
+ src/storage/repository.py | 13 +++++++++++++
+ 2 files changed, 19 insertions(+)
+
+=== CHANGED FILES (474926e43d1be1e144298853d7305ea25f4b2cd6..e2a4eb25e5ecb1f799bb9fdddfaa5995c66fdf93) ===
+M	src/api/routes.py
+M	src/storage/repository.py
+
+=== AFFECTED MODULES / DIRECTORIES ===
+src/api
+src/storage
+
+# Repository Structural Discovery Report
+
+## 1. Git & Repository Metadata
+- **Repo Root**: `/working_dir/c_a48ce6282e4a56a0/artifacts/file_generation/ttl=63d/intermediate/sample-repo-taskpulse`
+- **Current HEAD**: `e2a4eb25e5ecb1f799bb9fdddfaa5995c66fdf93` (`e2a4eb2` on branch `main`)
+- **Working Tree Dirty**: `False` (0 uncommitted/modified files)
+- **Total Files Scanned**: 5
+- **Language Breakdown**: Python (5)
+
+## 2. Manifests & Declared Scripts/Dependencies
+- No standard manifest files detected.
+
+## 3. Modules & Directory Topology
+### Module `src/api` (3 files)
+- **Observed Imports**: `src.api.auth`, `src.config`, `src.core.errors`, `src.core.logger`, `src.storage.repository`, `typing`
+  - `src/api/__init__.py` (1 lines) — _HTTP API layer: authentication middleware and route handlers._
+  - `src/api/auth.py` (16 lines) — _Header-based API token verification helper._
+    - Symbols: `verify_api_token` (function @ L12)
+  - `src/api/routes.py` (49 lines) — _HTTP route handlers for submitting and inspecting tasks._
+    - Symbols: `TaskRouter` (class @ L14), `__init__` (function @ L17), `handle_post_tasks` (function @ L21), `handle_get_task` (function @ L32), `handle_delete_task` (function @ L45)
+### Module `src/storage` (2 files)
+- **Observed Imports**: `dataclasses`, `datetime`, `json`, `sqlite3`, `src.core.errors`, `src.core.logger`, `typing`, `uuid`
+  - `src/storage/__init__.py` (1 lines) — _SQLite persistence layer for TaskPulse jobs and delivery logs._
+  - `src/storage/repository.py` (133 lines) — _SQLite task repository managing task state transitions and persistence._
+    - Symbols: `TaskRecord` (class @ L17), `TaskRepository` (class @ L28), `__init__` (function @ L31), `_init_schema` (function @ L37), `enqueue_task` (function @ L54), `get_task` (function @ L68), `fetch_pending_batch` (function @ L74), `mark_delivered` (function @ L81)
+
+## 4. Detected Entry Points (`file:line`)
+- `src/api/routes.py:1` [Route / handler definition file]: `"""HTTP route handlers for submitting and inspecting tasks."""`
+
+## 5. Convention Evidence Samples (`file:line`)
+- **File Naming Counts**: snake_case=2, kebab-case=0, camel/PascalCase=0
+### Category: `error_handling`
+### Category: `logging`
+- `src/api/auth.py:15` (Structured / leveled log call): `logger.warning("Rejected unauthorized API request")`
+- `src/storage/repository.py:65` (Structured / leveled log call): `logger.info("Enqueued new task", extra={"structured_fields": {"task_id": task_id, "topic": topic}})`
+- `src/storage/repository.py:103` (Structured / leveled log call): `logger.warning(`
+- `src/storage/repository.py:119` (Structured / leveled log call): `logger.info("Cancelled pending task", extra={"structured_fields": {"task_id": task_id}})`
+### Category: `testing`
+### Category: `imports_and_modules`
+- `src/api/auth.py:3` (Module import / export statement): `from typing import Optional`
+- `src/api/auth.py:5` (Module import / export statement): `from src.config import Settings`
+- `src/api/auth.py:6` (Module import / export statement): `from src.core.errors import AuthenticationError`
+- `src/api/auth.py:7` (Module import / export statement): `from src.core.logger import get_logger`
+- `src/api/routes.py:3` (Module import / export statement): `from typing import Any, Dict`
+- `src/api/routes.py:5` (Module import / export statement): `from src.api.auth import verify_api_token`
+- `src/api/routes.py:6` (Module import / export statement): `from src.config import Settings`
+- `src/api/routes.py:7` (Module import / export statement): `from src.core.errors import TaskPulseError`
+- `src/api/routes.py:8` (Module import / export statement): `from src.core.logger import get_logger`
+- `src/api/routes.py:9` (Module import / export statement): `from src.storage.repository import TaskRepository`
+### Category: `configuration_and_env`
+
