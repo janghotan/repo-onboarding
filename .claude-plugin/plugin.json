@@ -1,6 +1,6 @@
 {
   "name": "repo-onboarding",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Build and maintain a persistent, commit-tracked structural map of any codebase in .claude/repo-map/ and answer codebase questions using verified file:line evidence.",
   "author": {
     "name": "janghotan",

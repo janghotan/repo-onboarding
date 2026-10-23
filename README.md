@@ -47,18 +47,14 @@ The map is a routing layer and a summary. It is never the sole source for a code
 
 ### Option 1: Install via the Claude Code plugin marketplace
 
-This repository is its own plugin marketplace (`.claude-plugin/marketplace.json`), so Claude Code can install the skill directly. One step on Claude Code 2.1.275 or later:
-
-```text
-/plugin install repo-onboarding --marketplace janghotan/repo-onboarding
-```
-
-Or add the marketplace first, then install from it:
+This repository is its own plugin marketplace (`.claude-plugin/marketplace.json`), so Claude Code can install the skill directly:
 
 ```text
 /plugin marketplace add janghotan/repo-onboarding
 /plugin install repo-onboarding@repo-onboarding
 ```
+
+Newer Claude Code versions also accept the same thing as one step (`/plugin install repo-onboarding --marketplace janghotan/repo-onboarding`); if that form is unrecognized, use the two commands above.
 
 To check what was installed and remove it later:
 
@@ -85,115 +81,19 @@ Both `scripts/scan.sh` (`scripts/scan.py`) and `scripts/diff-check.sh` use only 
 
 ## Using repo-onboarding with other AI coding agents
 
-There is no cross-agent installer. Claude Code has a plugin marketplace; nothing else does. For every other agent the mechanism is the same: clone this repo somewhere permanent, then put a short pointer in whatever project-instructions file that agent loads automatically, telling it to read `SKILL.md` before doing onboarding-style work.
+For any AI coding agent other than Claude Code, there is no installer to write about: point the agent at this repository (https://github.com/janghotan/repo-onboarding) and ask it to read `SKILL.md` and install or use it as a skill. Most current agentic coding tools can inspect a repository, understand a skill's structure, and wire it into their own skill or instructions system on their own. That path keeps working as those tools change, because the agent reads the repo instead of a syntax we guessed at.
 
-The skill itself does not change — it is still `SKILL.md` plus `scripts/`, and the map it writes still lands in `.claude/repo-map/` inside the target repository.
+If your agent supports a persistent project-instructions file (`AGENTS.md`, `CLAUDE.md`, or similar), the simplest manual fallback is: clone this repository, then add one line to that file telling the agent to read `<path>/SKILL.md` before onboarding-style tasks.
 
 ```bash
 git clone https://github.com/janghotan/repo-onboarding.git ~/.repo-onboarding
 ```
 
-In the snippets below, `CLONE_PATH` means the absolute path where you cloned it. Every snippet is also checked into [`snippets/`](snippets/) so you can copy a file instead of editing one.
-
-### Any agent that reads a project instructions file (recommended default)
-
-`AGENTS.md` is an open format, read today by OpenAI Codex, Cursor, Windsurf / Devin Desktop, GitHub Copilot agents, and OpenCode. Copy [`snippets/AGENTS.md.example`](snippets/AGENTS.md.example) to your project root as `AGENTS.md` and set `CLONE_PATH`:
-
-```markdown
-## Codebase onboarding (repo-onboarding)
-
-When asked to onboard to this codebase, give an architecture overview, explain how
-something works here, or where to make a change, read `CLONE_PATH/SKILL.md` first and
-follow its process: run `scripts/diff-check.sh` to check for an existing map at
-`.claude/repo-map/`, scan on a first run or re-scan only the affected directories after
-new commits, and always read the real source files before citing `file:line` locations.
-```
-
-### Cursor
-
-Cursor reads project rules from `.cursor/rules/*.mdc` (the extension must be `.mdc`; a plain `.md` file there is ignored because it has no frontmatter). Copy [`snippets/cursor-repo-onboarding.mdc`](snippets/cursor-repo-onboarding.mdc) to `.cursor/rules/repo-onboarding.mdc`. Its frontmatter uses `description` plus `alwaysApply: false`, so Agent pulls the rule in when the task matches; use `alwaysApply: true` to load it every session.
-
-```markdown
----
-description: "Codebase onboarding with the repo-onboarding skill"
-alwaysApply: false
----
-
-When asked to onboard to this codebase, explain its architecture, answer "how does X work
-here", or say where to change Y, read `CLONE_PATH/SKILL.md` and follow its process. Cite
-real `file:line` references.
-```
-
-Cursor also reads `AGENTS.md` at the project root and in subdirectories, which is the simpler option if you do not want rule frontmatter.
-
-### Windsurf / Devin Desktop
-
-Windsurf reads workspace rules from `.devin/rules/*.md` (preferred) or `.windsurf/rules/*.md` (legacy fallback), plus the legacy single-file `.windsurfrules`. Copy [`snippets/windsurf-repo-onboarding.md`](snippets/windsurf-repo-onboarding.md) to `.devin/rules/repo-onboarding.md`. Frontmatter controls activation with `trigger`:
-
-```markdown
----
-trigger: model_decision
-description: Codebase onboarding with the repo-onboarding skill
----
-
-When asked to onboard to this codebase, or to explain how something works here, read
-`CLONE_PATH/SKILL.md` and follow its process. Cite real `file:line` references.
-```
-
-`trigger` accepts `always_on`, `model_decision`, `glob`, or `manual`. A root-level `AGENTS.md` is also read and is always on.
-
-### GitHub Copilot
-
-Copilot reads repository-wide instructions from `.github/copilot-instructions.md`. Copy [`snippets/copilot-instructions.md`](snippets/copilot-instructions.md) there:
-
-```markdown
-# Codebase onboarding (repo-onboarding)
-
-When asked to onboard to this codebase, explain how something works here, or say where to
-make a change, read `CLONE_PATH/SKILL.md` first and follow its process. Cite real
-`file:line` references.
-```
-
-For path-specific instructions Copilot uses `.github/instructions/NAME.instructions.md` with an `applyTo:` frontmatter glob. Copilot agents also read the nearest `AGENTS.md` in the directory tree, or a root `CLAUDE.md`.
-
-### OpenAI Codex
-
-Codex reads `AGENTS.md`, concatenating every one found from the project root down to the current directory (a local `AGENTS.override.md` takes precedence). Use [`snippets/AGENTS.md.example`](snippets/AGENTS.md.example) as your project's `AGENTS.md` — no extra configuration needed. Additional fallback filenames can be set with `project_doc_fallback_filenames` in Codex config.
-
-### OpenCode
-
-OpenCode reads `AGENTS.md` (a root `CLAUDE.md` is used as a fallback), and can be pointed at extra instruction files, including this skill's `SKILL.md`, via `instructions` in `opencode.json`:
-
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "instructions": ["CLONE_PATH/SKILL.md"]
-}
-```
-
-See [`snippets/opencode.json.example`](snippets/opencode.json.example). OpenCode also discovers Claude Code skills in `~/.claude/skills/`, so the manual drop-in install from Option 2 works there too.
-
-### Aider
-
-Aider has no auto-loaded conventions file by convention, but it has a documented mechanism: `--read` marks a file read-only and keeps it in the chat, and `read` in `.aider.conf.yml` makes that permanent.
-
-```yaml
-# .aider.conf.yml
-read: [CONVENTIONS.md]
-```
-
-Copy [`snippets/aider-conventions.md`](snippets/aider-conventions.md) to your project as `CONVENTIONS.md`.
-
-### Any other agent, and the fallback that always works
-
-If your agent supports a persistent project-instructions file, point it at `CLONE_PATH/SKILL.md` using the same wording as the `AGENTS.md` snippet above. If it does not, clone the repo anywhere and say this in your first message:
-
 ```text
-Read /absolute/path/to/repo-onboarding/SKILL.md and follow it before answering. When you
-need the structural scan, run its scripts/scan.sh and scripts/diff-check.sh.
+Before onboarding-style tasks in this repo, read ~/.repo-onboarding/SKILL.md and follow it.
 ```
 
-That manual paste works with every agent that can read a file, including ones not listed here. PRs adding verified conventions for other agents are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+[`snippets/examples/`](snippets/examples/) holds unverified community-style examples for a few specific tools. They are reference material only, not guaranteed-current syntax, and the generic approach above is the supported one.
 
 ## Usage Examples
 

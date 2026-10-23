@@ -18,5 +18,5 @@ follow its process:
 
 Save this file as `.github/copilot-instructions.md` in the repository root for
 repository-wide instructions. GitHub Copilot also reads `AGENTS.md` (nearest file in the
-directory tree wins) and a root `CLAUDE.md` for its agents, so `snippets/AGENTS.md.example`
+directory tree wins) and a root `CLAUDE.md` for its agents, so `snippets/examples/AGENTS.md.example`
 covers those cases.

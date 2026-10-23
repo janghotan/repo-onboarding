@@ -4,6 +4,21 @@ All notable changes to `repo-onboarding` are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-10-23
+
+Simplified the cross-agent documentation. The previous release published precise per-tool
+syntax (Cursor `.mdc` frontmatter, Windsurf rule paths, OpenCode config keys, Copilot
+`applyTo`, Aider config) that was fragile and could go stale silently.
+
+### Changed
+
+- **`README.md` / `README.zh-CN.md`**: The "other AI coding agents" section is now short and generic. It tells you to point the agent at this repository and ask it to read `SKILL.md`, with one line in a project instructions file as the manual fallback. The per-agent subsections and their syntax claims are gone.
+- **`README.md` / `README.zh-CN.md`**: The plugin install section leads with the two-command flow that is actually tested; the one-step `--marketplace` form is mentioned without a version claim.
+
+### Moved
+
+- **`snippets/*` to `snippets/examples/`**: The old snippet files are kept as optional reference only, behind a `snippets/examples/README.md` disclaimer that they are unverified and may not match current tool syntax. Nothing links to them as instructions to follow.
+
 ## [0.3.0] - 2026-10-23
 
 Documents how to use the skill from AI coding agents other than Claude Code, with
