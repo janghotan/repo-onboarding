@@ -24,3 +24,6 @@ Thumbs.db
 /.claude/repo-map/
 *.tmp
 *.bak
+
+# Local agent session artifacts
+.dscli/
